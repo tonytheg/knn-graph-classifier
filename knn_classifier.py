@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import time
 import os
 from collections import Counter
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_DIR = PROJECT_ROOT / 'data'
+RESULTS_DIR = PROJECT_ROOT / 'results'
 
 
 def load_graph(filepath):
@@ -115,12 +121,12 @@ def split_data(X, y, test_ratio=0.3, seed=42):
 
 
 if __name__ == '__main__':
-    os.makedirs('results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
 
     # Small Dataset: CA-GrQc
     print("=" * 50)
     print("Loading CA-GrQc dataset...")
-    G_small = load_graph('CA-GrQc.txt')
+    G_small = load_graph(DATA_DIR / 'CA-GrQc.txt')
     print("Nodes:", G_small.number_of_nodes(), " Edges:", G_small.number_of_edges())
 
     print("Extracting features...")
@@ -160,7 +166,7 @@ if __name__ == '__main__':
     ax.legend()
     ax.grid(True)
     plt.tight_layout()
-    plt.savefig('results/effectiveness.png', dpi=150)
+    plt.savefig(RESULTS_DIR / 'effectiveness.png', dpi=150)
     plt.close()
     print("Saved results/effectiveness.png")
 
@@ -172,14 +178,21 @@ if __name__ == '__main__':
     ax.set_title('k-NN Efficiency on CA-GrQc')
     ax.grid(True, axis='y')
     plt.tight_layout()
-    plt.savefig('results/efficiency.png', dpi=150)
+    plt.savefig(RESULTS_DIR / 'efficiency.png', dpi=150)
     plt.close()
     print("Saved results/efficiency.png")
 
     # Large Dataset: com-dblp (Scalability) 
     print("\n" + "=" * 50)
     print("Loading com-dblp dataset for scalability test...")
-    G_large = load_graph('com-dblp.ungraph.txt')
+    large_dataset = DATA_DIR / 'com-dblp.ungraph.txt'
+    if not large_dataset.exists():
+        print("Optional dataset not found; skipping scalability benchmark.")
+        print("To enable it, place com-dblp.ungraph.txt in the data/ directory.")
+        print("\nDone. Check the results/ folder for plots.")
+        raise SystemExit(0)
+
+    G_large = load_graph(large_dataset)
     print("Nodes:", G_large.number_of_nodes(), " Edges:", G_large.number_of_edges())
 
     sample_sizes = [2000, 5000, 10000]
@@ -250,7 +263,7 @@ if __name__ == '__main__':
         ax2.grid(True)
 
         plt.tight_layout()
-        plt.savefig('results/scalability.png', dpi=150)
+        plt.savefig(RESULTS_DIR / 'scalability.png', dpi=150)
         plt.close()
         print("Saved results/scalability.png")
 

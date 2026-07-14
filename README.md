@@ -18,10 +18,10 @@
 A complete **k-Nearest Neighbors classification pipeline** that operates on real-world graph data. The project extracts structural features from collaboration networks and uses them to classify nodes — all implemented **from scratch** without scikit-learn.
 
 ### Datasets
-| Dataset | Nodes | Edges | Source |
-|---------|-------|-------|--------|
-| CA-GrQc | 5,242 | 28,980 | Arxiv General Relativity collaborations |
-| com-DBLP | 317,080 | 1,049,866 | DBLP computer science collaborations |
+| Dataset | Nodes | Edges | Availability |
+|---------|-------|-------|--------------|
+| CA-GrQc | 5,242 | 28,980 | Included in `data/` |
+| com-DBLP | 317,080 | 1,049,866 | Optional; download separately from SNAP |
 
 ---
 
@@ -54,7 +54,7 @@ A complete **k-Nearest Neighbors classification pipeline** that operates on real
 
 ### Prerequisites
 ```bash
-pip install numpy networkx matplotlib
+pip install -r requirements.txt
 ```
 
 ### Run
@@ -63,7 +63,7 @@ pip install numpy networkx matplotlib
 git clone https://github.com/tonytheg/knn-graph-classifier.git
 cd knn-graph-classifier
 
-# Run the full pipeline
+# Run the included CA-GrQc evaluation
 python knn_classifier.py
 ```
 
@@ -74,6 +74,12 @@ The script will:
 4. Run k-NN classification for k = 1, 3, 5, 7, 9
 5. Output F1 scores and timing results
 6. Save plots to `results/`
+
+The larger com-DBLP scalability benchmark is optional because the dataset is
+not committed to this repository. Download `com-dblp.ungraph.txt` from the
+[SNAP DBLP collaboration network](https://snap.stanford.edu/data/com-DBLP.html)
+and place it in `data/`; the same command will detect it and add the scalability
+benchmark.
 
 ---
 
@@ -113,6 +119,7 @@ Evaluation (Macro-F1, Micro-F1, Runtime)
 ```
 knn-graph-classifier/
 ├── knn_classifier.py    # Main pipeline: feature extraction, k-NN, evaluation
+├── requirements.txt     # Python runtime dependencies
 ├── data/
 │   └── CA-GrQc.txt      # Small dataset (Arxiv collaborations)
 ├── results/
