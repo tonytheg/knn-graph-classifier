@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import time
 import os
-from collections import Counter
+from collections import Counter, deque
 from pathlib import Path
 
 
@@ -43,21 +43,43 @@ def extract_features(G):
 
 
 def extract_features_fast(G):
-    # faster version that skips clustering coefficient
-    # uses degree and average neighbor degree only
+    """Extract a low-cost feature without reusing degree as an input.
+
+    Degree defines the synthetic high/low-degree target, so including degree in
+    the feature matrix would leak the answer into the scalability benchmark.
+    Average neighbor degree remains inexpensive to compute and independent of
+    the target definition for the node being classified.
+    """
     nodes = sorted(G.nodes())
     deg = dict(G.degree())
     avg_nd = nx.average_neighbor_degree(G)
 
     X = []
     for n in nodes:
-        X.append([deg[n], avg_nd[n]])
+        X.append([avg_nd[n]])
 
     degrees = [deg[n] for n in nodes]
     median_deg = np.median(degrees)
     y = [1 if deg[n] > median_deg else 0 for n in nodes]
 
     return np.array(X), np.array(y)
+
+
+def bfs_sample(G, start_node, size):
+    """Return up to ``size`` nodes discovered by breadth-first search."""
+    visited = {start_node}
+    queue = deque([start_node])
+
+    while len(visited) < size and queue:
+        node = queue.popleft()
+        for neighbor in G.neighbors(node):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+                if len(visited) >= size:
+                    break
+
+    return visited
 
 
 def normalize(X_train, X_test):
@@ -206,17 +228,7 @@ if __name__ == '__main__':
 
     for size in sample_sizes:
         print("\nBFS sampling %d nodes..." % size)
-        visited = set()
-        queue = [start_node]
-        visited.add(start_node)
-        while len(visited) < size and queue:
-            node = queue.pop(0)
-            for neighbor in G_large.neighbors(node):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
-                    if len(visited) >= size:
-                        break
+        visited = bfs_sample(G_large, start_node, size)
 
         G_sub = G_large.subgraph(list(visited)).copy()
         # remove isolated nodes just in case
